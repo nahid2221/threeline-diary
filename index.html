@@ -12,13 +12,35 @@
     min-height: 100vh;
     padding: 20px;
     color: #333;
+    transition: background 0.3s;
+  }
+  body.dark {
+    background: linear-gradient(135deg, #0f0f1a, #1a1a2e);
   }
   .container { max-width: 500px; margin: 0 auto; }
-  h1 {
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  h1 { color: #fff; font-size: 22px; }
+  .icon-btn {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 16px;
     color: #fff;
+  }
+  .streak-box {
+    background: rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 12px;
     text-align: center;
-    margin-bottom: 20px;
-    font-size: 24px;
+    margin-bottom: 16px;
+    color: #fff;
+    font-weight: bold;
   }
   .card {
     background: #fff;
@@ -26,14 +48,17 @@
     padding: 20px;
     margin-bottom: 16px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: background 0.3s, color 0.3s;
   }
+  body.dark .card { background: #22222f; color: #eee; }
+  body.dark label { color: #b8a9ff; }
   label {
     display: block;
     font-weight: bold;
     margin-bottom: 6px;
     color: #4a3f8a;
   }
-  textarea {
+  textarea, input[type="time"] {
     width: 100%;
     min-height: 60px;
     border: 2px solid #ddd;
@@ -43,8 +68,12 @@
     margin-bottom: 16px;
     resize: vertical;
     font-family: inherit;
+    background: #fff;
+    color: #333;
   }
-  textarea:focus { outline: none; border-color: #7597de; }
+  body.dark textarea, body.dark input[type="time"] {
+    background: #1a1a26; color: #eee; border-color: #444;
+  }
   button {
     width: 100%;
     padding: 14px;
@@ -54,6 +83,7 @@
     border-radius: 10px;
     font-size: 16px;
     font-weight: bold;
+    margin-top: 6px;
   }
   button:active { background: #372f6b; }
   .entry {
@@ -62,7 +92,9 @@
     padding: 16px;
     margin-bottom: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: background 0.3s, color 0.3s;
   }
+  body.dark .entry { background: #22222f; color: #eee; }
   .entry-date {
     font-size: 13px;
     color: #999;
@@ -70,24 +102,51 @@
   }
   .entry p { margin-bottom: 6px; font-size: 14px; }
   .entry b { color: #4a3f8a; }
-  .delete-btn {
-    background: #e74c3c;
-    color: #fff;
+  body.dark .entry b { color: #b8a9ff; }
+  .btn-row { display: flex; gap: 8px; margin-top: 8px; }
+  .edit-btn, .delete-btn {
+    flex: 1;
     border: none;
     border-radius: 6px;
-    padding: 6px 12px;
-    font-size: 12px;
-    margin-top: 8px;
+    padding: 8px;
+    font-size: 13px;
+    color: #fff;
   }
+  .edit-btn { background: #3a8a5f; }
+  .delete-btn { background: #e74c3c; }
   #entriesTitle { color: #fff; margin: 20px 0 10px; }
+  .reminder-card {
+    background: rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 16px;
+    color: #fff;
+  }
+  .reminder-row { display: flex; gap: 8px; align-items: center; }
+  .reminder-row input { flex: 1; margin-bottom: 0; }
+  .reminder-row button { width: auto; padding: 10px 16px; margin-top: 0; }
 </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>📖 ৩ লাইন ডায়েরি</h1>
+  <div class="top-bar">
+    <h1>📖 ৩ লাইন ডায়েরি</h1>
+    <button class="icon-btn" onclick="toggleDark()">🌙/☀️</button>
+  </div>
 
-  <div class="card">
+  <div class="streak-box" id="streakBox">🔥 স্ট্রিক: ০ দিন</div>
+
+  <div class="reminder-card">
+    <label style="color:#fff;">প্রতিদিন রিমাইন্ডার (অ্যাপ খোলা থাকলে কাজ করবে)</label>
+    <div class="reminder-row">
+      <input type="time" id="reminderTime">
+      <button onclick="setReminder()">সেট করো</button>
+    </div>
+    <div id="reminderStatus" style="font-size:12px; margin-top:6px;"></div>
+  </div>
+
+  <div class="card" id="formCard">
     <label>আজকে ভালো কী হলো?</label>
     <textarea id="good"></textarea>
 
@@ -97,7 +156,7 @@
     <label>কালকের প্ল্যান কী?</label>
     <textarea id="plan"></textarea>
 
-    <button onclick="saveEntry()">সেভ করো</button>
+    <button onclick="saveEntry()" id="saveBtn">সেভ করো</button>
   </div>
 
   <h2 id="entriesTitle">আগের এন্ট্রিগুলো</h2>
@@ -105,14 +164,25 @@
 </div>
 
 <script>
+  let editingIndex = null;
+
   function loadEntries() {
     return JSON.parse(localStorage.getItem('diaryEntries') || '[]');
   }
-
   function saveEntries(entries) {
     localStorage.setItem('diaryEntries', JSON.stringify(entries));
   }
 
+  // ---- Dark mode ----
+  function toggleDark() {
+    document.body.classList.toggle('dark');
+    localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+  }
+  if (localStorage.getItem('darkMode') === 'true') {
+    document.body.classList.add('dark');
+  }
+
+  // ---- Save / Edit ----
   function saveEntry() {
     const good = document.getElementById('good').value.trim();
     const learned = document.getElementById('learned').value.trim();
@@ -124,17 +194,38 @@
     }
 
     const entries = loadEntries();
-    entries.unshift({
-      date: new Date().toLocaleString('bn-BD'),
-      good, learned, plan
-    });
-    saveEntries(entries);
 
+    if (editingIndex !== null) {
+      entries[editingIndex].good = good;
+      entries[editingIndex].learned = learned;
+      entries[editingIndex].plan = plan;
+      editingIndex = null;
+      document.getElementById('saveBtn').textContent = 'সেভ করো';
+    } else {
+      entries.unshift({
+        date: new Date().toLocaleString('bn-BD'),
+        rawDate: new Date().toDateString(),
+        good, learned, plan
+      });
+      updateStreak();
+    }
+
+    saveEntries(entries);
     document.getElementById('good').value = '';
     document.getElementById('learned').value = '';
     document.getElementById('plan').value = '';
-
     renderEntries();
+  }
+
+  function editEntry(index) {
+    const entries = loadEntries();
+    const e = entries[index];
+    document.getElementById('good').value = e.good || '';
+    document.getElementById('learned').value = e.learned || '';
+    document.getElementById('plan').value = e.plan || '';
+    editingIndex = index;
+    document.getElementById('saveBtn').textContent = 'আপডেট করো';
+    document.getElementById('formCard').scrollIntoView({behavior:'smooth'});
   }
 
   function deleteEntry(index) {
@@ -162,13 +253,75 @@
         ${entry.good ? `<p><b>ভালো:</b> ${entry.good}</p>` : ''}
         ${entry.learned ? `<p><b>শিখলাম:</b> ${entry.learned}</p>` : ''}
         ${entry.plan ? `<p><b>প্ল্যান:</b> ${entry.plan}</p>` : ''}
-        <button class="delete-btn" onclick="deleteEntry(${index})">মুছে ফেলো</button>
+        <div class="btn-row">
+          <button class="edit-btn" onclick="editEntry(${index})">এডিট করো</button>
+          <button class="delete-btn" onclick="deleteEntry(${index})">মুছে ফেলো</button>
+        </div>
       `;
       list.appendChild(div);
     });
   }
 
+  // ---- Streak counter ----
+  function updateStreak() {
+    const entries = loadEntries();
+    const dates = [...new Set(entries.map(e => e.rawDate))];
+    let streak = 0;
+    let day = new Date();
+
+    for (let i = 0; i < dates.length; i++) {
+      if (dates.includes(day.toDateString())) {
+        streak++;
+        day.setDate(day.getDate() - 1);
+      } else break;
+    }
+    localStorage.setItem('streak', streak);
+    document.getElementById('streakBox').textContent = `🔥 স্ট্রিক: ${streak} দিন`;
+  }
+
+  function loadStreakDisplay() {
+    const streak = localStorage.getItem('streak') || 0;
+    document.getElementById('streakBox').textContent = `🔥 স্ট্রিক: ${streak} দিন`;
+  }
+
+  // ---- Reminder ----
+  function setReminder() {
+    const time = document.getElementById('reminderTime').value;
+    if (!time) return;
+    localStorage.setItem('reminderTime', time);
+
+    if ('Notification' in window && Notification.permission !== 'granted') {
+      Notification.requestPermission();
+    }
+    document.getElementById('reminderStatus').textContent = `✅ প্রতিদিন ${time} টায় রিমাইন্ড করবে (অ্যাপ খোলা থাকলে)`;
+  }
+
+  function checkReminder() {
+    const time = localStorage.getItem('reminderTime');
+    if (!time) return;
+    const now = new Date();
+    const current = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+    const lastNotified = localStorage.getItem('lastNotified');
+
+    if (current === time && lastNotified !== now.toDateString()) {
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('৩ লাইন ডায়েরি', { body: 'আজকের ৩ লাইন লিখতে ভুলো না!' });
+      } else {
+        alert('আজকের ৩ লাইন লিখতে ভুলো না!');
+      }
+      localStorage.setItem('lastNotified', now.toDateString());
+    }
+  }
+  setInterval(checkReminder, 30000); // প্রতি ৩০ সেকেন্ডে চেক করবে
+
+  const savedTime = localStorage.getItem('reminderTime');
+  if (savedTime) {
+    document.getElementById('reminderTime').value = savedTime;
+    document.getElementById('reminderStatus').textContent = `✅ প্রতিদিন ${savedTime} টায় রিমাইন্ড করবে (অ্যাপ খোলা থাকলে)`;
+  }
+
   renderEntries();
+  loadStreakDisplay();
 </script>
 
 </body>

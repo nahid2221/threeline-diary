@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "io.github.nahid2221.threelinediary",
+        "sha256_cert_fingerprints": ["2B:67:D0:7A:57:1D:EB:EA:16:50:07:F0:E0:99:0B:7B:EE:51:6E:8C:24:13:66:24:76:44:21:91:CD:54:02:C5"]
+      }
+    }]

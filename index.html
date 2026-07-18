@@ -122,6 +122,31 @@ body.dark .entry b { color: #b8a9ff; }
 .menu-item:active { background: rgba(255,255,255,0.08); }
 .menu-icon { font-size: 17px; width: 22px; text-align: center; }
 .menu-arrow { margin-left: auto; opacity: 0.4; font-size: 13px; }
+
+/* ---- custom modal (replaces browser prompt) ---- */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+  display: none; align-items: center; justify-content: center;
+  z-index: 100; padding: 24px;
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: #fff; border-radius: 16px; padding: 22px;
+  width: 100%; max-width: 340px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+body.dark .modal-box { background: #22222f; color: #eee; }
+.modal-title { font-weight: bold; font-size: 16px; margin-bottom: 14px; color: #4a3f8a; }
+body.dark .modal-title { color: #b8a9ff; }
+.modal-input {
+  width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 10px;
+  font-size: 15px; margin-bottom: 16px; font-family: inherit;
+  background: #fff; color: #333;
+}
+body.dark .modal-input { background: #1a1a26; color: #eee; border-color: #444; }
+.modal-btn-row { display: flex; gap: 10px; }
+.modal-btn-row button { margin-top: 0; }
+.modal-btn-cancel { background: #999; }
+.modal-btn-cancel:active { background: #777; }
 </style>
 </head>
 <body>
@@ -189,6 +214,18 @@ body.dark .entry b { color: #b8a9ff; }
   </div>
 </div>
 
+<!-- Custom profile-name modal -->
+<div class="modal-overlay" id="profileModal">
+  <div class="modal-box">
+    <div class="modal-title">তোমার নাম লেখো</div>
+    <input type="text" id="profileNameInput" class="modal-input" placeholder="যেমন: রাহুল">
+    <div class="modal-btn-row">
+      <button class="modal-btn-cancel" onclick="closeProfileModal()">বাতিল</button>
+      <button onclick="saveProfileName()">সেভ করো</button>
+    </div>
+  </div>
+</div>
+
 <script>
 let editingIndex = null;
 
@@ -218,11 +255,20 @@ function updatePanelStats() {
 }
 function editProfile() {
   const current = localStorage.getItem('profileName') || '';
-  const name = prompt('তোমার নাম লেখো:', current);
-  if (name !== null && name.trim() !== '') {
-    localStorage.setItem('profileName', name.trim());
+  document.getElementById('profileNameInput').value = current;
+  document.getElementById('profileModal').classList.add('open');
+  setTimeout(() => document.getElementById('profileNameInput').focus(), 100);
+}
+function closeProfileModal() {
+  document.getElementById('profileModal').classList.remove('open');
+}
+function saveProfileName() {
+  const name = document.getElementById('profileNameInput').value.trim();
+  if (name !== '') {
+    localStorage.setItem('profileName', name);
     loadProfile();
   }
+  closeProfileModal();
 }
 
 /* ---- Backup / Restore ---- */
@@ -423,4 +469,4 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 </body>
-</html>
+  </html>

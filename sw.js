@@ -1,4 +1,4 @@
-const CACHE_NAME = 'threeline-diary-v1';
+const CACHE_NAME = 'threeline-diary-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

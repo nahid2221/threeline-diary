@@ -123,7 +123,7 @@ body.dark .entry b { color: #b8a9ff; }
 .menu-icon { font-size: 17px; width: 22px; text-align: center; }
 .menu-arrow { margin-left: auto; opacity: 0.4; font-size: 13px; }
 
-/* ---- custom modal (replaces browser prompt) ---- */
+/* ---- custom modals (replace native alert/confirm/prompt) ---- */
 .modal-overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,0.55);
   display: none; align-items: center; justify-content: center;
@@ -137,6 +137,7 @@ body.dark .entry b { color: #b8a9ff; }
 body.dark .modal-box { background: #22222f; color: #eee; }
 .modal-title { font-weight: bold; font-size: 16px; margin-bottom: 14px; color: #4a3f8a; }
 body.dark .modal-title { color: #b8a9ff; }
+.modal-message { font-size: 14.5px; line-height: 1.5; margin-bottom: 18px; }
 .modal-input {
   width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 10px;
   font-size: 15px; margin-bottom: 16px; font-family: inherit;
@@ -147,6 +148,13 @@ body.dark .modal-input { background: #1a1a26; color: #eee; border-color: #444; }
 .modal-btn-row button { margin-top: 0; }
 .modal-btn-cancel { background: #999; }
 .modal-btn-cancel:active { background: #777; }
+.about-row { margin-bottom: 9px; font-size: 14px; }
+.about-privacy {
+  margin-top: 12px; padding-top: 12px; font-size: 12.5px; line-height: 1.55;
+  opacity: 0.8; border-top: 1px solid rgba(0,0,0,0.08);
+}
+body.dark .about-privacy { border-top-color: rgba(255,255,255,0.12); }
+.about-version { margin-top: 12px; font-size: 11px; opacity: 0.55; }
 </style>
 </head>
 <body>
@@ -162,25 +170,25 @@ body.dark .modal-input { background: #1a1a26; color: #eee; border-color: #444; }
   <div class="streak-box" id="streakBox">🔥 স্ট্রিক: ০ দিন</div>
 
   <div class="reminder-card">
-    <label style="color:#fff;">প্রতিদিন রিমাইন্ডার (অ্যাপ খোলা থাকলে কাজ করবে)</label>
+    <label style="color:#fff;" data-i18n="reminderLabel">প্রতিদিন রিমাইন্ডার (অ্যাপ খোলা থাকলে কাজ করবে)</label>
     <div class="reminder-row">
       <input type="time" id="reminderTime">
-      <button onclick="setReminder()">সেট করো</button>
+      <button onclick="setReminder()" data-i18n="setBtn">সেট করো</button>
     </div>
     <div id="reminderStatus" style="font-size:12px; margin-top:6px;"></div>
   </div>
 
   <div class="card" id="formCard">
-    <label>আজকে ভালো কী হলো?</label>
+    <label data-i18n="labelGood">আজকে ভালো কী হলো?</label>
     <textarea id="good"></textarea>
-    <label>কী শিখলে?</label>
+    <label data-i18n="labelLearned">কী শিখলে?</label>
     <textarea id="learned"></textarea>
-    <label>কালকের প্ল্যান কী?</label>
+    <label data-i18n="labelPlan">কালকের প্ল্যান কী?</label>
     <textarea id="plan"></textarea>
-    <button onclick="saveEntry()" id="saveBtn">সেভ করো</button>
+    <button onclick="saveEntry()" id="saveBtn" data-i18n="saveBtn">সেভ করো</button>
   </div>
 
-  <h2 id="entriesTitle">আগের এন্ট্রিগুলো</h2>
+  <h2 id="entriesTitle" data-i18n="entriesTitle">আগের এন্ট্রিগুলো</h2>
   <div id="entriesList"></div>
 </div>
 
@@ -196,38 +204,188 @@ body.dark .modal-input { background: #1a1a26; color: #eee; border-color: #444; }
   </div>
 
   <div class="menu-group">
-    <div class="menu-item" onclick="editProfile()"><span class="menu-icon">👤</span> প্রোফাইল<span class="menu-arrow">›</span></div>
-    <div class="menu-item" onclick="toggleDark()"><span class="menu-icon">🎨</span> থিম ও ডার্ক মোড<span class="menu-arrow">›</span></div>
-    <div class="menu-item" onclick="alert('ভাষা পরিবর্তনের ফিচার শীঘ্রই আসছে 🙂')"><span class="menu-icon">🌐</span> ভাষা — বাংলা<span class="menu-arrow">›</span></div>
+    <div class="menu-item" onclick="editProfile()"><span class="menu-icon">👤</span> <span data-i18n="menuProfile">প্রোফাইল</span><span class="menu-arrow">›</span></div>
+    <div class="menu-item" onclick="toggleDark()"><span class="menu-icon">🎨</span> <span data-i18n="menuTheme">থিম ও ডার্ক মোড</span><span class="menu-arrow">›</span></div>
+    <div class="menu-item" onclick="toggleLanguage()"><span class="menu-icon">🌐</span> <span id="menuLanguageLabel" data-i18n="menuLanguage">ভাষা — বাংলা</span><span class="menu-arrow">›</span></div>
   </div>
 
-  <div class="menu-group-title">ডেটা</div>
+  <div class="menu-group-title" data-i18n="dataGroup">ডেটা</div>
   <div class="menu-group">
-    <div class="menu-item" onclick="downloadBackup()"><span class="menu-icon">⬇️</span> ব্যাকআপ ডাউনলোড করো</div>
-    <div class="menu-item" onclick="document.getElementById('restoreInput').click()"><span class="menu-icon">⬆️</span> ব্যাকআপ ফিরিয়ে আনো</div>
+    <div class="menu-item" onclick="downloadBackup()"><span class="menu-icon">⬇️</span> <span data-i18n="menuBackupDown">ব্যাকআপ ডাউনলোড করো</span></div>
+    <div class="menu-item" onclick="document.getElementById('restoreInput').click()"><span class="menu-icon">⬆️</span> <span data-i18n="menuBackupUp">ব্যাকআপ ফিরিয়ে আনো</span></div>
     <input type="file" id="restoreInput" accept=".json" style="display:none" onchange="restoreBackup(event)">
   </div>
 
-  <div class="menu-group-title">অন্যান্য</div>
+  <div class="menu-group-title" data-i18n="otherGroup">অন্যান্য</div>
   <div class="menu-group">
-    <div class="menu-item" onclick="alert('৩ লাইন ডায়েরি\\nভার্সন ১.০.০\\n\\nপ্রতিদিন তিনটা লাইনে নিজের দিন লিখে রাখো।')"><span class="menu-icon">ℹ️</span> অ্যাপ সম্পর্কে — v1.0.0</div>
+    <div class="menu-item" onclick="openAbout()"><span class="menu-icon">ℹ️</span> <span data-i18n="menuAbout">অ্যাপ সম্পর্কে — v1.0.0</span></div>
   </div>
 </div>
 
-<!-- Custom profile-name modal -->
+<!-- Profile name modal -->
 <div class="modal-overlay" id="profileModal">
   <div class="modal-box">
-    <div class="modal-title">তোমার নাম লেখো</div>
-    <input type="text" id="profileNameInput" class="modal-input" placeholder="যেমন: রাহুল">
+    <div class="modal-title" data-i18n="profileModalTitle">তোমার নাম লেখো</div>
+    <input type="text" id="profileNameInput" class="modal-input" data-i18n-placeholder="profileInputPlaceholder" placeholder="যেমন: রাহুল">
     <div class="modal-btn-row">
-      <button class="modal-btn-cancel" onclick="closeProfileModal()">বাতিল</button>
-      <button onclick="saveProfileName()">সেভ করো</button>
+      <button class="modal-btn-cancel" onclick="closeProfileModal()" data-i18n="cancelBtn">বাতিল</button>
+      <button onclick="saveProfileName()" data-i18n="saveNameBtn">সেভ করো</button>
     </div>
+  </div>
+</div>
+
+<!-- Generic info modal (replaces alert) -->
+<div class="modal-overlay" id="infoModal">
+  <div class="modal-box">
+    <div class="modal-message" id="infoMessage"></div>
+    <button onclick="closeInfoModal()" data-i18n="ok">ঠিক আছে</button>
+  </div>
+</div>
+
+<!-- Generic confirm modal (replaces confirm) -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-box">
+    <div class="modal-message" id="confirmMessage"></div>
+    <div class="modal-btn-row">
+      <button class="modal-btn-cancel" onclick="closeConfirmModal()" data-i18n="cancelBtn">বাতিল</button>
+      <button onclick="confirmYes()" data-i18n="ok">ঠিক আছে</button>
+    </div>
+  </div>
+</div>
+
+<!-- About modal -->
+<div class="modal-overlay" id="aboutModal">
+  <div class="modal-box">
+    <div class="modal-title" data-i18n="aboutTitle">অ্যাপ সম্পর্কে</div>
+    <div class="about-row"><span data-i18n="aboutDeveloper">তৈরি করেছেন</span>: <b>Nahid Hasan</b></div>
+    <div class="about-row"><span data-i18n="aboutCreated">অ্যাপ তৈরি হয়েছে</span>: <b>জুলাই ২০২৬</b></div>
+    <div class="about-row" id="aboutWordsRow"></div>
+    <div class="about-row" id="aboutBestStreakRow"></div>
+    <div class="about-row" id="aboutDaysRow"></div>
+    <div class="about-privacy" data-i18n="aboutPrivacy">তোমার সব লেখা শুধু তোমার ফোনেই সেভ থাকে, কোথাও পাঠানো হয় না।</div>
+    <div class="about-version">v1.0.0</div>
+    <button onclick="closeAboutModal()" data-i18n="ok" style="margin-top:14px;">ঠিক আছে</button>
   </div>
 </div>
 
 <script>
 let editingIndex = null;
+let pendingConfirmAction = null;
+let currentLang = localStorage.getItem('appLang') || 'bn';
+const APP_DEVELOPER = 'Nahid Hasan';
+const APP_CREATED = { bn: 'জুলাই ২০২৬', en: 'July 2026' };
+
+const dict = {
+  bn: {
+    reminderLabel: 'প্রতিদিন রিমাইন্ডার (অ্যাপ খোলা থাকলে কাজ করবে)',
+    setBtn: 'সেট করো',
+    labelGood: 'আজকে ভালো কী হলো?',
+    labelLearned: 'কী শিখলে?',
+    labelPlan: 'কালকের প্ল্যান কী?',
+    saveBtn: 'সেভ করো',
+    updateBtn: 'আপডেট করো',
+    entriesTitle: 'আগের এন্ট্রিগুলো',
+    noEntries: 'এখনো কোনো এন্ট্রি নেই',
+    entryGood: 'ভালো:',
+    entryLearned: 'শিখলাম:',
+    entryPlan: 'প্ল্যান:',
+    editBtn: 'এডিট করো',
+    deleteBtn: 'মুছে ফেলো',
+    menuProfile: 'প্রোফাইল',
+    menuTheme: 'থিম ও ডার্ক মোড',
+    menuLanguage: 'ভাষা — বাংলা',
+    menuBackupDown: 'ব্যাকআপ ডাউনলোড করো',
+    menuBackupUp: 'ব্যাকআপ ফিরিয়ে আনো',
+    menuAbout: 'অ্যাপ সম্পর্কে — v1.0.0',
+    dataGroup: 'ডেটা',
+    otherGroup: 'অন্যান্য',
+    profileModalTitle: 'তোমার নাম লেখো',
+    profileInputPlaceholder: 'যেমন: রাহুল',
+    cancelBtn: 'বাতিল',
+    saveNameBtn: 'সেভ করো',
+    fillOneAnswer: 'অন্তত একটা প্রশ্নের উত্তর লেখো',
+    reminderMsg: 'আজকের ৩ লাইন লিখতে ভুলো না!',
+    confirmRestore: 'বর্তমান সব এন্ট্রি মুছে ব্যাকআপ থেকে ফিরিয়ে আনা হবে। চালিয়ে যাবে?',
+    restoreSuccess: 'ব্যাকআপ থেকে সফলভাবে ফিরিয়ে আনা হয়েছে ✅',
+    restoreFail: 'এই ফাইলটা ঠিক ব্যাকআপ ফরম্যাটে নেই।',
+    confirmDelete: 'এই এন্ট্রিটা মুছে ফেলবে? এটা ফিরিয়ে আনা যাবে না।',
+    aboutTitle: 'অ্যাপ সম্পর্কে',
+    aboutDeveloper: 'তৈরি করেছেন',
+    aboutCreated: 'অ্যাপ তৈরি হয়েছে',
+    aboutPrivacy: 'তোমার সব লেখা শুধু তোমার ফোনেই সেভ থাকে, কোথাও পাঠানো হয় না।',
+    aboutWords: 'মোট লেখা শব্দ',
+    aboutBestStreak: 'সর্বোচ্চ স্ট্রিক',
+    aboutDaysUsing: 'অ্যাপ ব্যবহার করছো',
+    daysSuffix: 'দিন ধরে',
+    ok: 'ঠিক আছে'
+  },
+  en: {
+    reminderLabel: 'Daily reminder (works while app is open)',
+    setBtn: 'Set',
+    labelGood: 'What went well today?',
+    labelLearned: 'What did you learn?',
+    labelPlan: "Tomorrow's plan?",
+    saveBtn: 'Save',
+    updateBtn: 'Update',
+    entriesTitle: 'Past entries',
+    noEntries: 'No entries yet',
+    entryGood: 'Good:',
+    entryLearned: 'Learned:',
+    entryPlan: 'Plan:',
+    editBtn: 'Edit',
+    deleteBtn: 'Delete',
+    menuProfile: 'Profile',
+    menuTheme: 'Theme & dark mode',
+    menuLanguage: 'Language — English',
+    menuBackupDown: 'Download backup',
+    menuBackupUp: 'Restore backup',
+    menuAbout: 'About — v1.0.0',
+    dataGroup: 'Data',
+    otherGroup: 'Other',
+    profileModalTitle: 'Enter your name',
+    profileInputPlaceholder: 'e.g. Rahul',
+    cancelBtn: 'Cancel',
+    saveNameBtn: 'Save',
+    fillOneAnswer: 'Please fill in at least one answer',
+    reminderMsg: "Don't forget to write today's 3 lines!",
+    confirmRestore: 'This will erase current entries and restore from backup. Continue?',
+    restoreSuccess: 'Backup restored successfully ✅',
+    restoreFail: 'This file is not a valid backup format.',
+    confirmDelete: 'Delete this entry? This cannot be undone.',
+    aboutTitle: 'About',
+    aboutDeveloper: 'Made by',
+    aboutCreated: 'App created',
+    aboutPrivacy: 'All your entries stay on your phone only — nothing is ever sent anywhere.',
+    aboutWords: 'Total words written',
+    aboutBestStreak: 'Best streak',
+    aboutDaysUsing: 'Using app for',
+    daysSuffix: 'days',
+    ok: 'OK'
+  }
+};
+function t(key) { return dict[currentLang][key]; }
+
+/* ---- language ---- */
+function applyLanguage() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.getAttribute('data-i18n'));
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    el.placeholder = t(el.getAttribute('data-i18n-placeholder'));
+  });
+  document.getElementById('saveBtn').textContent = editingIndex !== null ? t('updateBtn') : t('saveBtn');
+  document.documentElement.lang = currentLang;
+  loadProfile();
+  renderEntries();
+  loadStreakDisplay();
+  const savedTime = localStorage.getItem('reminderTime');
+  if (savedTime) setReminderStatusText(savedTime);
+}
+function toggleLanguage() {
+  currentLang = currentLang === 'bn' ? 'en' : 'bn';
+  localStorage.setItem('appLang', currentLang);
+  applyLanguage();
+}
 
 function loadEntries() { return JSON.parse(localStorage.getItem('diaryEntries') || '[]'); }
 function saveEntries(entries) { localStorage.setItem('diaryEntries', JSON.stringify(entries)); }
@@ -238,12 +396,33 @@ function toggleMenu() {
   document.getElementById('overlay').classList.toggle('open');
 }
 
+/* ---- Generic modals (no native alert/confirm/prompt) ---- */
+function showInfo(message) {
+  document.getElementById('infoMessage').textContent = message;
+  document.getElementById('infoModal').classList.add('open');
+}
+function closeInfoModal() { document.getElementById('infoModal').classList.remove('open'); }
+function showConfirm(message, action) {
+  document.getElementById('confirmMessage').textContent = message;
+  pendingConfirmAction = action;
+  document.getElementById('confirmModal').classList.add('open');
+}
+function closeConfirmModal() {
+  document.getElementById('confirmModal').classList.remove('open');
+  pendingConfirmAction = null;
+}
+function confirmYes() {
+  if (pendingConfirmAction) pendingConfirmAction();
+  closeConfirmModal();
+}
+
 /* ---- Profile ---- */
 function loadProfile() {
-  const name = localStorage.getItem('profileName') || 'তুমি';
-  const initial = name.trim().charAt(0) || 'ত';
-  document.getElementById('appTitle').textContent = `📖 ${name}-র ডায়েরি`;
-  document.getElementById('panelName').textContent = `${name}-র ডায়েরি`;
+  const name = localStorage.getItem('profileName') || (currentLang === 'bn' ? 'তুমি' : 'You');
+  const initial = name.trim().charAt(0) || (currentLang === 'bn' ? 'ত' : 'Y');
+  const suffix = currentLang === 'bn' ? `${name}-র ডায়েরি` : `${name}'s Diary`;
+  document.getElementById('appTitle').textContent = `📖 ${suffix}`;
+  document.getElementById('panelName').textContent = suffix;
   document.getElementById('profileBtn').textContent = initial;
   document.getElementById('panelAvatar').textContent = initial;
   updatePanelStats();
@@ -251,7 +430,9 @@ function loadProfile() {
 function updatePanelStats() {
   const entries = loadEntries();
   const streak = localStorage.getItem('streak') || 0;
-  document.getElementById('panelSub').textContent = `${entries.length} টা এন্ট্রি · স্ট্রিক ${streak} দিন`;
+  document.getElementById('panelSub').textContent = currentLang === 'bn'
+    ? `${entries.length} টা এন্ট্রি · স্ট্রিক ${streak} দিন`
+    : `${entries.length} entries · streak ${streak} days`;
 }
 function editProfile() {
   const current = localStorage.getItem('profileName') || '';
@@ -259,9 +440,7 @@ function editProfile() {
   document.getElementById('profileModal').classList.add('open');
   setTimeout(() => document.getElementById('profileNameInput').focus(), 100);
 }
-function closeProfileModal() {
-  document.getElementById('profileModal').classList.remove('open');
-}
+function closeProfileModal() { document.getElementById('profileModal').classList.remove('open'); }
 function saveProfileName() {
   const name = document.getElementById('profileNameInput').value.trim();
   if (name !== '') {
@@ -271,13 +450,48 @@ function saveProfileName() {
   closeProfileModal();
 }
 
+/* ---- About ---- */
+function countWords(str) {
+  return str ? str.trim().split(/\s+/).filter(Boolean).length : 0;
+}
+function openAbout() {
+  const entries = loadEntries();
+  let totalWords = 0;
+  entries.forEach(e => {
+    totalWords += countWords(e.good) + countWords(e.learned) + countWords(e.plan);
+  });
+  const bestStreak = localStorage.getItem('maxStreak') || 0;
+  let firstUse = localStorage.getItem('firstUseDate');
+  if (!firstUse) {
+    firstUse = new Date().toDateString();
+    localStorage.setItem('firstUseDate', firstUse);
+  }
+  const daysUsing = Math.max(1, Math.floor((new Date() - new Date(firstUse)) / 86400000) + 1);
+
+  document.getElementById('aboutWordsRow').textContent = `${t('aboutWords')}: ${totalWords}`;
+  document.getElementById('aboutBestStreakRow').textContent = currentLang === 'bn'
+    ? `${t('aboutBestStreak')}: 🏅 ${bestStreak} দিন`
+    : `${t('aboutBestStreak')}: 🏅 ${bestStreak} days`;
+  document.getElementById('aboutDaysRow').textContent = currentLang === 'bn'
+    ? `${t('aboutDaysUsing')}: ${daysUsing} ${t('daysSuffix')}`
+    : `${t('aboutDaysUsing')} ${daysUsing} ${t('daysSuffix')}`;
+
+  document.querySelector('#aboutModal .about-row:nth-child(3)').innerHTML =
+    `${t('aboutCreated')}: <b>${APP_CREATED[currentLang]}</b>`;
+
+  document.getElementById('aboutModal').classList.add('open');
+}
+function closeAboutModal() { document.getElementById('aboutModal').classList.remove('open'); }
+
 /* ---- Backup / Restore ---- */
 function downloadBackup() {
   const entries = loadEntries();
   const data = {
     profileName: localStorage.getItem('profileName') || '',
     streak: localStorage.getItem('streak') || 0,
+    maxStreak: localStorage.getItem('maxStreak') || 0,
     reminderTime: localStorage.getItem('reminderTime') || '',
+    firstUseDate: localStorage.getItem('firstUseDate') || '',
     entries
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -295,25 +509,31 @@ function restoreBackup(event) {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = function(e) {
+    let data;
     try {
-      const data = JSON.parse(e.target.result);
+      data = JSON.parse(e.target.result);
       if (!Array.isArray(data.entries)) throw new Error('invalid');
-      if (!confirm('বর্তমান সব এন্ট্রি মুছে ব্যাকআপ থেকে ফিরিয়ে আনা হবে। চালিয়ে যাবে?')) return;
+    } catch (err) {
+      showInfo(t('restoreFail'));
+      event.target.value = '';
+      return;
+    }
+    showConfirm(t('confirmRestore'), function() {
       saveEntries(data.entries);
       if (data.profileName) localStorage.setItem('profileName', data.profileName);
       if (data.streak !== undefined) localStorage.setItem('streak', data.streak);
+      if (data.maxStreak !== undefined) localStorage.setItem('maxStreak', data.maxStreak);
       if (data.reminderTime) localStorage.setItem('reminderTime', data.reminderTime);
+      if (data.firstUseDate) localStorage.setItem('firstUseDate', data.firstUseDate);
       loadProfile();
       renderEntries();
       loadStreakDisplay();
-      alert('ব্যাকআপ থেকে সফলভাবে ফিরিয়ে আনা হয়েছে ✅');
+      showInfo(t('restoreSuccess'));
       toggleMenu();
-    } catch (err) {
-      alert('এই ফাইলটা ঠিক ব্যাকআপ ফরম্যাটে নেই।');
-    }
+    });
+    event.target.value = '';
   };
   reader.readAsText(file);
-  event.target.value = '';
 }
 
 /* ---- Dark mode ---- */
@@ -331,7 +551,7 @@ function saveEntry() {
   const learned = document.getElementById('learned').value.trim();
   const plan = document.getElementById('plan').value.trim();
   if (!good && !learned && !plan) {
-    alert('অন্তত একটা প্রশ্নের উত্তর লেখো');
+    showInfo(t('fillOneAnswer'));
     return;
   }
   const entries = loadEntries();
@@ -340,7 +560,7 @@ function saveEntry() {
     entries[editingIndex].learned = learned;
     entries[editingIndex].plan = plan;
     editingIndex = null;
-    document.getElementById('saveBtn').textContent = 'সেভ করো';
+    document.getElementById('saveBtn').textContent = t('saveBtn');
     saveEntries(entries);
   } else {
     entries.unshift({
@@ -365,16 +585,18 @@ function editEntry(index) {
   document.getElementById('learned').value = e.learned || '';
   document.getElementById('plan').value = e.plan || '';
   editingIndex = index;
-  document.getElementById('saveBtn').textContent = 'আপডেট করো';
+  document.getElementById('saveBtn').textContent = t('updateBtn');
   document.getElementById('formCard').scrollIntoView({behavior:'smooth'});
 }
 
 function deleteEntry(index) {
-  const entries = loadEntries();
-  entries.splice(index, 1);
-  saveEntries(entries);
-  renderEntries();
-  updatePanelStats();
+  showConfirm(t('confirmDelete'), function() {
+    const entries = loadEntries();
+    entries.splice(index, 1);
+    saveEntries(entries);
+    renderEntries();
+    updatePanelStats();
+  });
 }
 
 function renderEntries() {
@@ -382,7 +604,7 @@ function renderEntries() {
   const list = document.getElementById('entriesList');
   list.innerHTML = '';
   if (entries.length === 0) {
-    list.innerHTML = '<p style="color:#eee; text-align:center;">এখনো কোনো এন্ট্রি নেই</p>';
+    list.innerHTML = `<p style="color:#eee; text-align:center;">${t('noEntries')}</p>`;
     return;
   }
   entries.forEach((entry, index) => {
@@ -390,12 +612,12 @@ function renderEntries() {
     div.className = 'entry';
     div.innerHTML = `
       <div class="entry-date">${entry.date}</div>
-      ${entry.good ? `<p><b>ভালো:</b> ${entry.good}</p>` : ''}
-      ${entry.learned ? `<p><b>শিখলাম:</b> ${entry.learned}</p>` : ''}
-      ${entry.plan ? `<p><b>প্ল্যান:</b> ${entry.plan}</p>` : ''}
+      ${entry.good ? `<p><b>${t('entryGood')}</b> ${entry.good}</p>` : ''}
+      ${entry.learned ? `<p><b>${t('entryLearned')}</b> ${entry.learned}</p>` : ''}
+      ${entry.plan ? `<p><b>${t('entryPlan')}</b> ${entry.plan}</p>` : ''}
       <div class="btn-row">
-        <button class="edit-btn" onclick="editEntry(${index})">এডিট করো</button>
-        <button class="delete-btn" onclick="deleteEntry(${index})">মুছে ফেলো</button>
+        <button class="edit-btn" onclick="editEntry(${index})">${t('editBtn')}</button>
+        <button class="delete-btn" onclick="deleteEntry(${index})">${t('deleteBtn')}</button>
       </div>
     `;
     list.appendChild(div);
@@ -415,14 +637,26 @@ function updateStreak() {
     } else break;
   }
   localStorage.setItem('streak', streak);
-  document.getElementById('streakBox').textContent = `🔥 স্ট্রিক: ${streak} দিন`;
+  const maxStreak = parseInt(localStorage.getItem('maxStreak') || '0', 10);
+  if (streak > maxStreak) localStorage.setItem('maxStreak', streak);
+  setStreakText(streak);
+}
+function setStreakText(streak) {
+  document.getElementById('streakBox').textContent = currentLang === 'bn'
+    ? `🔥 স্ট্রিক: ${streak} দিন`
+    : `🔥 Streak: ${streak} days`;
 }
 function loadStreakDisplay() {
   const streak = localStorage.getItem('streak') || 0;
-  document.getElementById('streakBox').textContent = `🔥 স্ট্রিক: ${streak} দিন`;
+  setStreakText(streak);
 }
 
 /* ---- Reminder ---- */
+function setReminderStatusText(time) {
+  document.getElementById('reminderStatus').textContent = currentLang === 'bn'
+    ? `✅ প্রতিদিন ${time} টায় রিমাইন্ড করবে (অ্যাপ খোলা থাকলে)`
+    : `✅ Will remind you daily at ${time} (while app is open)`;
+}
 function setReminder() {
   const time = document.getElementById('reminderTime').value;
   if (!time) return;
@@ -430,7 +664,7 @@ function setReminder() {
   if ('Notification' in window && Notification.permission !== 'granted') {
     Notification.requestPermission();
   }
-  document.getElementById('reminderStatus').textContent = `✅ প্রতিদিন ${time} টায় রিমাইন্ড করবে (অ্যাপ খোলা থাকলে)`;
+  setReminderStatusText(time);
 }
 function checkReminder() {
   const time = localStorage.getItem('reminderTime');
@@ -440,9 +674,9 @@ function checkReminder() {
   const lastNotified = localStorage.getItem('lastNotified');
   if (current === time && lastNotified !== now.toDateString()) {
     if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification('৩ লাইন ডায়েরি', { body: 'আজকের ৩ লাইন লিখতে ভুলো না!' });
+      new Notification(currentLang === 'bn' ? '৩ লাইন ডায়েরি' : '3-Line Diary', { body: t('reminderMsg') });
     } else {
-      alert('আজকের ৩ লাইন লিখতে ভুলো না!');
+      showInfo(t('reminderMsg'));
     }
     localStorage.setItem('lastNotified', now.toDateString());
   }
@@ -452,12 +686,12 @@ setInterval(checkReminder, 30000);
 const savedTime = localStorage.getItem('reminderTime');
 if (savedTime) {
   document.getElementById('reminderTime').value = savedTime;
-  document.getElementById('reminderStatus').textContent = `✅ প্রতিদিন ${savedTime} টায় রিমাইন্ড করবে (অ্যাপ খোলা থাকলে)`;
+}
+if (!localStorage.getItem('firstUseDate')) {
+  localStorage.setItem('firstUseDate', new Date().toDateString());
 }
 
-renderEntries();
-loadStreakDisplay();
-loadProfile();
+applyLanguage();
 </script>
 <script>
 if ('serviceWorker' in navigator) {
@@ -469,4 +703,4 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 </body>
-  </html>
+    </html>
